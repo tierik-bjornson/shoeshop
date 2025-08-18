@@ -1,6 +1,5 @@
 pipeline {
     agent any
-    
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')  
         SSH_KEY_CREDENTIALS = credentials('swarm-manager-ssh')       
