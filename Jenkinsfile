@@ -57,17 +57,17 @@ pipeline {
             }
         }
 
-        stage('Deploy Docker Stack via SSH') {
-            steps {
-                sshagent(['swarm-manager-ssh']) { 
-                    sh """
-                    ssh -o StrictHostKeyChecking=no $MANAGER_USER@$MANAGER_IP '
-                        docker stack deploy -c /home/ubuntu/shoeshop/docker-compose.yml $STACK_NAME --with-registry-auth
-                    '
-                    """
-                }
-            }
-        }
+        // stage('Deploy Docker Stack via SSH') {
+        //     steps {
+        //         sshagent(['swarm-manager-ssh']) { 
+        //             sh """
+        //             ssh -o StrictHostKeyChecking=no $MANAGER_USER@$MANAGER_IP '
+        //                 docker stack deploy -c /home/ubuntu/shoeshop/docker-compose.yml $STACK_NAME --with-registry-auth
+        //             '
+        //             """
+        //         }
+        //     }
+        // }
     }
 
     post {
