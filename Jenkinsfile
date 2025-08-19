@@ -25,40 +25,9 @@ pipeline {
             }
         }
 
-        stage('Build Frontend Image') {
-            steps {
-                dir('Frontend') {
-                    sh "docker build -t $FRONTEND_IMAGE ."
-                }
-            }
+        stage('Build Frobackend:latest '
+              }
         }
-        stage('Trivy Scan Backend') {
-    steps {
-        script {
-            sh """
-            mkdir -p trivy-reports
-
-            # Scan backend image, xuất JSON
-            trivy image --format json --severity LOW,MEDIUM,HIGH,CRITICAL --output trivy-reports/backend.json $BACKEND_IMAGE
-
-            # In ra summary cho kiểm tra nhanh
-            echo "=== Backend CVE Summary ==="
-            trivy image --severity LOW,MEDIUM,HIGH,CRITICAL --quiet $BACKEND_IMAGE
-
-            # Nếu JSON có dữ liệu mới convert sang HTML
-            if [ -s trivy-reports/backend.json ]; then
-                curl -sSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -o trivy-reports/html.tpl
-                trivy convert --format template --template trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json
-            else
-                echo '{"Results":[]}' > trivy-reports/backend.html
-            fi
-            """
-
-            // Đây mới là step Jenkins, nằm ngoài sh
-            archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
-        }
-    }
-}
 
         
 
