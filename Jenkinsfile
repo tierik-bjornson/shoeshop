@@ -54,6 +54,7 @@ pipeline {
                     archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
                 }
             }
+        }
         stage('Push Images to DockerHub') {
             steps {
                 script {
