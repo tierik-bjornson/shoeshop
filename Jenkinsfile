@@ -32,7 +32,7 @@ pipeline {
                 }
             }
         }
-stage('Trivy Scan Backend') {
+        stage('Trivy Scan Backend') {
     steps {
         script {
             sh """
@@ -52,13 +52,14 @@ stage('Trivy Scan Backend') {
             else
                 echo '{"Results":[]}' > trivy-reports/backend.html
             fi
-
-            # Lưu artifacts
-            archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
             """
+
+            // Đây mới là step Jenkins, nằm ngoài sh
+            archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
         }
     }
 }
+
         
 
         stage('Trivy Scan Frontend') {
