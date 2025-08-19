@@ -34,10 +34,31 @@ pipeline {
         }
 
         stage('Trivy Scan Backend') {
-            steps {
-                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL $BACKEND_IMAGE || true"
-            }
+    steps {
+        script {
+            sh """
+            mkdir -p trivy-reports
+
+            # Quét image backend và xuất JSON (bao gồm CVE mức HIGH/CRITICAL)
+            trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/backend.json $BACKEND_IMAGE
+
+            # Nếu file JSON trống, thêm placeholder để HTML không lỗi
+            if [ ! -s trivy-reports/backend.json ]; then
+                echo '{"Results":[]}' > trivy-reports/backend.json
+            fi
+
+            # Tải template HTML chuẩn từ repo Trivy
+            curl -sSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -o trivy-reports/html.tpl
+
+            # Chuyển JSON sang HTML
+            trivy convert --format template --template trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json
+            """
+
+            # Lưu artifacts HTML và JSON
+            archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
         }
+    }
+}
 
         stage('Trivy Scan Frontend') {
     steps {
