@@ -32,31 +32,34 @@ pipeline {
                 }
             }
         }
-
-        stage('Trivy Scan Backend') {
+stage('Trivy Scan Backend') {
     steps {
         script {
             sh """
             mkdir -p trivy-reports
 
-            # Quét image backend và xuất JSON (bao gồm CVE mức HIGH/CRITICAL)
-            trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/backend.json $BACKEND_IMAGE
+            # Scan backend image, xuất JSON
+            trivy image --format json --severity LOW,MEDIUM,HIGH,CRITICAL --output trivy-reports/backend.json $BACKEND_IMAGE
 
-            # Nếu file JSON trống, thêm placeholder để HTML không lỗi
-            if [ ! -s trivy-reports/backend.json ]; then
-                echo '{"Results":[]}' > trivy-reports/backend.json
+            # In ra summary cho kiểm tra nhanh
+            echo "=== Backend CVE Summary ==="
+            trivy image --severity LOW,MEDIUM,HIGH,CRITICAL --quiet $BACKEND_IMAGE
+
+            # Nếu JSON có dữ liệu mới convert sang HTML
+            if [ -s trivy-reports/backend.json ]; then
+                curl -sSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -o trivy-reports/html.tpl
+                trivy convert --format template --template trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json
+            else
+                echo '{"Results":[]}' > trivy-reports/backend.html
             fi
 
-            # Tải template HTML chuẩn từ repo Trivy
-            curl -sSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -o trivy-reports/html.tpl
-
-            # Chuyển JSON sang HTML
-            trivy convert --format template --template trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json
-            """
+            # Lưu artifacts
             archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
+            """
         }
     }
 }
+        
 
         stage('Trivy Scan Frontend') {
     steps {
