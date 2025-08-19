@@ -27,7 +27,7 @@ pipeline {
 
         stage('Image Scan backend') {
           steps {
-            sh ' trivy image --format template --template "@/usr/bin/html.tpl" -o report.html tien2k3/shoeshop-backend:latest '
+            sh ' trivy image --format template --template "@/var/lib/docker/volumes/jenkins_home/_data/workspace/shoeshop-pipeline/trivy-reports/html.tpl" -o report.html tien2k3/shoeshop-backend:latest '
            }
          }
 
