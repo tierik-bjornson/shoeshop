@@ -9,7 +9,7 @@ services:
       - shoeshop-network
     environment:
       - NODE_ENV=production
-      - MONGO_URI=mongodb://mongo:27017/shoeshop
+      - MONGO_URI=mongodb://shoeshop_mongo:27017/shoeshop
     deploy:
       replicas: 3
       restart_policy:
