@@ -28,32 +28,11 @@ pipeline {
         stage('Image Scan backend') {
     steps {
         script {
-            docker.image('aquasec/trivy:latest').inside('--dns 8.8.8.8 --entrypoint=""') {
+           
                 sh """
-                # Tạo thư mục lưu report
-                mkdir -p trivy-reports
-
-                # Quét container backend và xuất JSON
-                trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/backend.json $BACKEND_IMAGE || { echo "Failed to scan backend image"; exit 1; }
-
-                # Tải template HTML về nếu chưa có
-                if [ ! -f trivy-reports/html.tpl ]; then
-                    curl -sSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -o trivy-reports/html.tpl || { echo "Failed to download html.tpl"; exit 1; }
-                fi
-
-                # Kiểm tra xem file html.tpl có nội dung không
-                if [ ! -s trivy-reports/html.tpl ]; then
-                    echo "Error: html.tpl is empty or not downloaded correctly"
-                    exit 1
-                fi
-
-                # Chuyển JSON sang HTML
-                trivy convert --format template --template @trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json || { echo "Failed to convert JSON to HTML"; exit 1; }
+                 trivy image --format template --template "@/usr/bin/html.tpl" -o report.html $BACKEND_IMAGE
                 """
-
-                // Lưu artifacts để xem trực tiếp trong Jenkins
-                archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
-            }
+            
         }
     }
 }
