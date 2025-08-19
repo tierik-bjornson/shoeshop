@@ -37,19 +37,23 @@ pipeline {
 
                     # Tải template HTML về nếu chưa có
                     if [ ! -f trivy-reports/html.tpl ]; then
-                        curl -sSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -o trivy-reports/html.tpl
+                        curl -sSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -o trivy-reports/html.tpl || { echo "Failed to download html.tpl"; exit 1; }
+                    fi
+
+                    # Kiểm tra xem file html.tpl có nội dung không
+                    if [ ! -s trivy-reports/html.tpl ]; then
+                        echo "Error: html.tpl is empty or not downloaded correctly"
+                        exit 1
                     fi
 
                     # Chuyển JSON sang HTML
-                    trivy convert --format template --template trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json
+                    trivy convert --format template --template @trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json
                     """
 
                     // Lưu artifacts để xem trực tiếp trong Jenkins
                     archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
                 }
             }
-        }
-
         stage('Push Images to DockerHub') {
             steps {
                 script {
