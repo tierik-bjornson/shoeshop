@@ -53,8 +53,6 @@ pipeline {
             # Chuyển JSON sang HTML
             trivy convert --format template --template trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json
             """
-
-            # Lưu artifacts HTML và JSON
             archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
         }
     }
