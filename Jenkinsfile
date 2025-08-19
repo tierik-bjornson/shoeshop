@@ -60,9 +60,10 @@ pipeline {
         stage('Copy docker-compose.yml to Manager') {
             steps {
                 sshagent(['swarm-manager-ssh']) {
-                    sh """
-                    scp -o StrictHostKeyChecking=no docker-compose.yml $MANAGER_USER@$MANAGER_IP:/home/$MANAGER_USER/shoeshop/docker-compose.yml
-                    """
+                     sh '''
+                     ssh -o StrictHostKeyChecking=no ubuntu@18.140.218.13 "mkdir -p /home/ubuntu/shoeshop"
+                     scp -o StrictHostKeyChecking=no docker-compose.yml ubuntu@18.140.218.13:/home/ubuntu/shoeshop/docker-compose.yml
+                     '''
                 }
             }
         }
