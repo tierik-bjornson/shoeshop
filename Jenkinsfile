@@ -41,12 +41,12 @@ pipeline {
 
         stage('Trivy Scan Frontend & Report') {
            steps {
-                sh '''
+               sh """
                 mkdir -p trivy-reports
-                trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/frontend.json tien2k3/shoeshop-frontend:latest
-                trivy convert --format trivy-reports/frontend.json --output trivy-reports/frontend.html --format template --template "@contrib/html.tpl"
-                '''
-                archiveArtifacts artifacts: 'trivy-reports/frontend.html', fingerprint: true
+                trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/frontend.json $FRONTEND_IMAGE
+                trivy convert --format template --template @contrib/html.tpl --output trivy-reports/frontend.html trivy-reports/frontend.json
+                """
+                archiveArtifacts artifacts: 'trivy-reports/frontend.*', fingerprint: true
            }
         }
 
