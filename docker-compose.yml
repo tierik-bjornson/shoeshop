@@ -20,7 +20,7 @@ services:
   frontend:
     image: tien2k3/shoeshop-frontend:latest  
     ports:
-      - "3000:3000"
+      - "3000:80"
     depends_on:
       - backend
     networks:
