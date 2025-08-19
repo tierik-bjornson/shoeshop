@@ -1,8 +1,8 @@
 version: "3.8"
+
 services:
   backend:
-    build:
-      context: ./Backend
+    image: tien2k3/shoeshop-backend:latest   
     ports:
       - "5000:5000"
     networks:
@@ -10,27 +10,44 @@ services:
     environment:
       - NODE_ENV=production
       - MONGO_URI=mongodb://mongo:27017/shoeshop
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.role == worker]
 
   frontend:
-    build:
-      context: ./Frontend
+    image: tien2k3/shoeshop-frontend:latest  
     ports:
       - "3000:3000"
     depends_on:
       - backend
     networks:
       - shoeshop-network
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.role == worker]
 
   mongo:
-    image: mongo:latest
+    image: mongo:6
     volumes:
       - mongo-data:/data/db
     networks:
       - shoeshop-network
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.role == manager]
 
 networks:
   shoeshop-network:
-    driver: bridge
+    driver: overlay   
 
 volumes:
   mongo-data:
