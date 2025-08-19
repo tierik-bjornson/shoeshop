@@ -7,7 +7,7 @@ pipeline {
         BACKEND_IMAGE = "tien2k3/shoeshop-backend:latest"
         FRONTEND_IMAGE = "tien2k3/shoeshop-frontend:latest"
         MANAGER_USER = "ubuntu"
-        MANAGER_IP = "EC2_PUBLIC_IP"
+        MANAGER_IP = "18.140.218.13"
     }
 
     stages {
@@ -57,17 +57,27 @@ pipeline {
             }
         }
 
-        // stage('Deploy Docker Stack via SSH') {
-        //     steps {
-        //         sshagent(['swarm-manager-ssh']) { 
-        //             sh """
-        //             ssh -o StrictHostKeyChecking=no $MANAGER_USER@$MANAGER_IP '
-        //                 docker stack deploy -c /home/ubuntu/shoeshop/docker-compose.yml $STACK_NAME --with-registry-auth
-        //             '
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Copy docker-compose.yml to Manager') {
+            steps {
+                sshagent(['swarm-manager-ssh']) {
+                    sh """
+                    scp -o StrictHostKeyChecking=no docker-compose.yml $MANAGER_USER@$MANAGER_IP:/home/$MANAGER_USER/shoeshop/docker-compose.yml
+                    """
+                }
+            }
+        }
+
+        stage('Deploy Docker Stack via SSH') {
+            steps {
+                sshagent(['swarm-manager-ssh']) {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no $MANAGER_USER@$MANAGER_IP '
+                        docker stack deploy -c /home/$MANAGER_USER/shoeshop/docker-compose.yml $STACK_NAME --with-registry-auth
+                    '
+                    """
+                }
+            }
+        }
     }
 
     post {
