@@ -39,17 +39,16 @@ pipeline {
             }
         }
 
-        stage('Trivy Scan Frontend') {
+        stage('Trivy Scan Frontend & Report') {
             steps {
-               sh """
-               mkdir -p trivy-reports
-               trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/frontend.json $FRONTEND_IMAGE || true
-               trivy image --format sarif --severity HIGH,CRITICAL --output trivy-reports/frontend.sarif $FRONTEND_IMAGE || true
-               """
-            archiveArtifacts artifacts: 'trivy-reports/*', fingerprint: true
+                sh '''
+                mkdir -p trivy-reports
+                trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/frontend.json tien2k3/shoeshop-frontend:latest
+                trivy image --format template --template "@contrib/html.tpl" --output trivy-reports/frontend.html --input trivy-reports/frontend.json
+                '''
+            archiveArtifacts artifacts: 'trivy-reports/frontend.html', fingerprint: true
            }
         }
-
 
         stage('Push Images to DockerHub') {
             steps {
