@@ -15,7 +15,7 @@ services:
       restart_policy:
         condition: on-failure
       placement:
-        constraints: [node.role == worker]
+        constraints: [node.role == manager]
 
   frontend:
     image: tien2k3/shoeshop-frontend:latest  
@@ -30,7 +30,7 @@ services:
       restart_policy:
         condition: on-failure
       placement:
-        constraints: [node.role == worker]
+        constraints: [node.role == manager]
 
   mongo:
     image: mongo:6
