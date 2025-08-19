@@ -44,7 +44,7 @@ pipeline {
                 sh '''
                 mkdir -p trivy-reports
                 trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/frontend.json tien2k3/shoeshop-frontend:latest
-                trivy convert --input trivy-reports/frontend.json --output trivy-reports/frontend.html --format template --template "@contrib/html.tpl"
+                trivy convert --format trivy-reports/frontend.json --output trivy-reports/frontend.html --format template --template "@contrib/html.tpl"
                 '''
                 archiveArtifacts artifacts: 'trivy-reports/frontend.html', fingerprint: true
            }
