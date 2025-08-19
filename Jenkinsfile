@@ -25,9 +25,11 @@ pipeline {
             }
         }
 
-        stage('Build Frobackend:latest '
-              }
-        }
+        stage('Image Scan backend') {
+          steps {
+            sh ' trivy image --format template --template "@/usr/local/share/trivy/templates/html.tpl" -o report.html tien2k3/shoeshop_backend:latest '
+           }
+         }
 
         
 
