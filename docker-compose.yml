@@ -9,7 +9,12 @@ services:
       - shoeshop-network
     environment:
       - NODE_ENV=production
-      - MONGO_URI=mongodb://shoeshop_mongo:27017/shoeshop
+      - JWT_SECRET=shoeshop123456
+      - MONGO_URL=mongodb+srv://admin:Pass1234@cluster0.ejfq9j3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - PAYPAL_CLIENT_ID=
+      - CLOUD_NAME=yhnujmiol
+      - CLOUD_API_KEY=286216212842658
+      - CLOUD_API_SECRET=kpY0laLOcnP1IifoxAe7zE3m9Cc
     deploy:
       replicas: 3
       restart_policy:
