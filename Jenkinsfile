@@ -26,37 +26,29 @@ pipeline {
         }
 
         stage('Image Scan backend') {
-          steps {
-            sh ' trivy image --format template --template "@/var/lib/docker/volumes/jenkins_home/_data/workspace/shoeshop-pipeline/trivy-reports/html.tpl" -o report.html tien2k3/shoeshop-backend:latest '
-           }
-         }
+            steps {
+                script {
+                    sh """
+                    # Tạo thư mục lưu report
+                    mkdir -p trivy-reports
 
-        
+                    # Quét container backend và xuất JSON
+                    trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/backend.json $BACKEND_IMAGE
 
-        stage('Trivy Scan Frontend') {
-    steps {
-        script {
-            sh """
-            # Tạo thư mục lưu report
-            mkdir -p trivy-reports
+                    # Tải template HTML về nếu chưa có
+                    if [ ! -f trivy-reports/html.tpl ]; then
+                        curl -sSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -o trivy-reports/html.tpl
+                    fi
 
-            # Quét container frontend và xuất JSON
-            trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/frontend.json $FRONTEND_IMAGE
+                    # Chuyển JSON sang HTML
+                    trivy convert --format template --template trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json
+                    """
 
-            # Tải template HTML về nếu chưa có
-            if [ ! -f trivy-reports/html.tpl ]; then
-                curl -sSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -o trivy-reports/html.tpl
-            fi
-
-            # Chuyển JSON sang HTML
-            trivy convert --format template --template trivy-reports/html.tpl --output trivy-reports/frontend.html trivy-reports/frontend.json
-            """
-
-            // Lưu artifacts để xem trực tiếp trong Jenkins
-            archiveArtifacts artifacts: 'trivy-reports/frontend.*', fingerprint: true
+                    // Lưu artifacts để xem trực tiếp trong Jenkins
+                    archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
+                }
+            }
         }
-    }
-}
 
         stage('Push Images to DockerHub') {
             steps {
