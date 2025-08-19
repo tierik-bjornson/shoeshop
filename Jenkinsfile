@@ -40,16 +40,17 @@ pipeline {
         }
 
         stage('Trivy Scan Frontend') {
-            steps {
-                sh """
-                mkdir -p trivy-reports
-                trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/frontend.json $FRONTEND_IMAGE
-                trivy image --format html --severity HIGH,CRITICAL --output trivy-reports/frontend.html $FRONTEND_IMAGE
-                """
-                archiveArtifacts artifacts: 'trivy-reports/frontend.*', fingerprint: true
-            }
-        }
+    steps {
+        sh """
+        mkdir -p trivy-reports
+  
+        trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/frontend.json $FRONTEND_IMAGE
 
+        trivy convert --format template --template "@trivy/html.tpl" --output trivy-reports/frontend.html trivy-reports/frontend.json
+        """
+        archiveArtifacts artifacts: 'trivy-reports/frontend.*', fingerprint: true
+    }
+}
 
         stage('Push Images to DockerHub') {
             steps {
