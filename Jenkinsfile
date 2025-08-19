@@ -40,15 +40,16 @@ pipeline {
         }
 
         stage('Trivy Scan Frontend & Report') {
-            steps {
+           steps {
                 sh '''
                 mkdir -p trivy-reports
                 trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/frontend.json tien2k3/shoeshop-frontend:latest
-                trivy image --format template --template "@contrib/html.tpl" --output trivy-reports/frontend.html --input trivy-reports/frontend.json
+                trivy report --input trivy-reports/frontend.json --output trivy-reports/frontend.html --format template --template "@contrib/html.tpl"
                 '''
-            archiveArtifacts artifacts: 'trivy-reports/frontend.html', fingerprint: true
+                archiveArtifacts artifacts: 'trivy-reports/frontend.html', fingerprint: true
            }
         }
+
 
         stage('Push Images to DockerHub') {
             steps {
