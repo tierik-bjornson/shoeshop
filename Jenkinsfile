@@ -41,14 +41,26 @@ pipeline {
 
         stage('Trivy Scan Frontend') {
     steps {
-        sh """
-        mkdir -p trivy-reports
-  
-        trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/frontend.json $FRONTEND_IMAGE
+        script {
+            sh """
+            # Tạo thư mục lưu report
+            mkdir -p trivy-reports
 
-        trivy convert --format template --template "@trivy/html.tpl" --output trivy-reports/frontend.html trivy-reports/frontend.json
-        """
-        archiveArtifacts artifacts: 'trivy-reports/frontend.*', fingerprint: true
+            # Quét container frontend và xuất JSON
+            trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/frontend.json $FRONTEND_IMAGE
+
+            # Tải template HTML về nếu chưa có
+            if [ ! -f trivy-reports/html.tpl ]; then
+                curl -sSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -o trivy-reports/html.tpl
+            fi
+
+            # Chuyển JSON sang HTML
+            trivy convert --format template --template trivy-reports/html.tpl --output trivy-reports/frontend.html trivy-reports/frontend.json
+            """
+
+            // Lưu artifacts để xem trực tiếp trong Jenkins
+            archiveArtifacts artifacts: 'trivy-reports/frontend.*', fingerprint: true
+        }
     }
 }
 
