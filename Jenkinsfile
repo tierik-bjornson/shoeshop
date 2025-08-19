@@ -41,9 +41,15 @@ pipeline {
 
         stage('Trivy Scan Frontend') {
             steps {
-                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL $FRONTEND_IMAGE || true"
-            }
+               sh """
+               mkdir -p trivy-reports
+               trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/frontend.json $FRONTEND_IMAGE || true
+               trivy image --format sarif --severity HIGH,CRITICAL --output trivy-reports/frontend.sarif $FRONTEND_IMAGE || true
+               """
+            archiveArtifacts artifacts: 'trivy-reports/*', fingerprint: true
+           }
         }
+
 
         stage('Push Images to DockerHub') {
             steps {
