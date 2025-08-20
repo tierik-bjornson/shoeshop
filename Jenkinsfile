@@ -112,6 +112,7 @@ pipeline {
                 sshagent(['swarm-manager-ssh']) {
                     sh """
                     ssh -o StrictHostKeyChecking=no $MANAGER_USER@$MANAGER_IP '
+                        export TAG=$IMAGE_TAG
                         docker stack deploy -c /home/$MANAGER_USER/shoeshop/docker-compose.yml $STACK_NAME --with-registry-auth
                     '
                     """
