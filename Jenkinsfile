@@ -96,12 +96,17 @@ pipeline {
             }
         }
 
-        stage('Copy docker-compose.yml to Manager') {
+        stage('Pull docker-compose.yml to from Git') {
             steps {
                 sshagent(['swarm-manager-ssh']) {
                      sh '''
                      ssh -o StrictHostKeyChecking=no ubuntu@18.140.218.13 "mkdir -p /home/ubuntu/shoeshop"
-                     scp -o StrictHostKeyChecking=no docker-compose.yml ubuntu@18.140.218.13:/home/ubuntu/shoeshop/docker-compose.yml
+                     if [ -d "/home/$MANAGER_USER/shoeshop/.git" ]; then
+                            cd /home/$MANAGER_USER/shoeshop
+                            git pull origin $GIT_BRANCH 
+                        else
+                            git clone -b $GIT_BRANCH $GIT_REPO_URL /home/$MANAGER_USER/shoeshop 
+                        fi
                      '''
                 }
             }
