@@ -50,7 +50,7 @@ pipeline {
         script {
             docker.image('aquasec/trivy:latest').inside('--dns 8.8.8.8 --entrypoint="" --volume /usr/bin/html.tpl:/html.tpl:ro') {
                 sh """
-                # Tạo thư mục lưu report và cấp quyền
+           
                 mkdir -p trivy-reports
                 chmod -R 777 trivy-reports
 
