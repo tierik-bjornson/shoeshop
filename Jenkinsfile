@@ -130,7 +130,7 @@ pipeline {
                 sshagent(['swarm-manager-ssh']) {
                      sh '''
                      ssh -o StrictHostKeyChecking=no ubuntu@18.140.218.13 
-                     
+                     netstat -tuln | grep 3000
                      curl --fail --max-time 100 -v http://$MANAGER_IP:3000
                      '''
                 }
