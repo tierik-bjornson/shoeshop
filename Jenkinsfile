@@ -4,8 +4,8 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')  
         SSH_KEY_CREDENTIALS = credentials('swarm-manager-ssh')       
         STACK_NAME = "shoeshop"
-        BACKEND_IMAGE = "tien2k3/shoeshop-backend:latest"
-        FRONTEND_IMAGE = "tien2k3/shoeshop-frontend:latest"
+        BACKEND_IMAGE = "tien2k3/shoeshop-backend"
+        FRONTEND_IMAGE = "tien2k3/shoeshop-frontend"
         MANAGER_USER = "ubuntu"
         MANAGER_IP = "18.140.218.13"
         GIT_REPO_URL = "https://github.com/tierik-bjornson/shoeshop.git"
