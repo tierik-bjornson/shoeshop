@@ -124,6 +124,18 @@ pipeline {
                 }
             }
         }
+
+        stage('Health check') {
+            steps {
+                sshagent(['swarm-manager-ssh']) {
+                     sh '''
+                     ssh -o StrictHostKeyChecking=no ubuntu@18.140.218.13 "mkdir -p /home/ubuntu/shoeshop"
+                     docker stack ps $STACK_NAME --no-trunc || { exit 1; }
+                     docker service ls --filter name=$STACK_NAME || { exit 1; }
+                     '''
+                }
+            }
+        }
     }
 
     post {
