@@ -19,12 +19,12 @@ pipeline {
             }
         }
 
-        stage('Get Git Commit Hash') {
+        stage('Set Build Number Tag') {
             steps {
                 script {
-                    env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    env.BACKEND_IMAGE_TAGGED = "${BACKEND_IMAGE}:${GIT_COMMIT_SHORT}"
-                    env.FRONTEND_IMAGE_TAGGED = "${FRONTEND_IMAGE}:${GIT_COMMIT_SHORT}"
+                    env.IMAGE_TAG = "${BUILD_NUMBER}"
+                    env.BACKEND_IMAGE_TAGGED = "${BACKEND_IMAGE}:${IMAGE_TAG}"
+                    env.FRONTEND_IMAGE_TAGGED = "${FRONTEND_IMAGE}:${IMAGE_TAG}"
                 }
             }
         }
@@ -33,6 +33,14 @@ pipeline {
             steps {
                 dir('Backend') {
                     sh "docker build -t $BACKEND_IMAGE ."
+                }
+            }
+        }
+
+        stage('Build Frontend Image') {
+            steps {
+                dir('Frontend') {
+                    sh "docker build -t $FRONTEND_IMAGE ."
                 }
             }
         }
