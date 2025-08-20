@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   backend:
-    image: tien2k3/shoeshop-backend:latest   
+    image: tien2k3/shoeshop-backend:${TAG}  
     ports:
       - "5000:5000"
     networks:
@@ -17,7 +17,7 @@ services:
         constraints: [node.role == manager]
 
   frontend:
-    image: tien2k3/shoeshop-frontend:latest  
+    image: tien2k3/shoeshop-frontend:${TAG} 
     ports:
       - "3000:80"
     depends_on:
