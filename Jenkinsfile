@@ -32,7 +32,10 @@ pipeline {
         stage('Build Backend Image') {
             steps {
                 dir('Backend') {
-                    sh "docker build -t $BACKEND_IMAGE ."
+                    sh """
+                    docker build -t ${BACKEND_IMAGE}:latest .
+                    docker tag ${BACKEND_IMAGE}:latest ${BACKEND_IMAGE_TAGGED}
+                    """
                 }
             }
         }
@@ -40,7 +43,10 @@ pipeline {
         stage('Build Frontend Image') {
             steps {
                 dir('Frontend') {
-                    sh "docker build -t $FRONTEND_IMAGE ."
+                    sh """
+                    docker build -t ${FRONTEND_IMAGE}:latest .
+                    docker tag ${FRONTEND_IMAGE}:latest ${FRONTEND_IMAGE_TAGGED}
+                    """
                 }
             }
         }
