@@ -129,7 +129,7 @@ pipeline {
             steps {
                 sshagent(['swarm-manager-ssh']) {
                      sh '''
-                     ssh -o StrictHostKeyChecking=no ubuntu@18.140.218.13 "mkdir -p /home/ubuntu/shoeshop"
+                     ssh -o StrictHostKeyChecking=no ubuntu@18.140.218.13 
                      
                      curl --fail -s http://localhost:3000 
                      '''
