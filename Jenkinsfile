@@ -60,23 +60,23 @@ pipeline {
                 mkdir -p trivy-reports
                 chmod -R 777 trivy-reports
 
-                # Copy html.tpl từ volume vào trivy-reports
+               
                 cp /html.tpl trivy-reports/html.tpl || { echo "Failed to copy html.tpl"; exit 1; }
 
-                # Kiểm tra xem file html.tpl có nội dung không
+      
                 if [ ! -s trivy-reports/html.tpl ]; then
                     echo "Error: html.tpl is empty or not found"
                     exit 1
                 fi
 
-                # Quét container backend và xuất JSON
+
                 trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/backend.json $BACKEND_IMAGE || { echo "Failed to scan backend image"; exit 1; }
 
-                # Chuyển JSON sang HTML
+   
                 trivy convert --format template --template @trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json || { echo "Failed to convert JSON to HTML"; exit 1; }
                 """
 
-                // Lưu artifacts để xem trực tiếp trong Jenkins
+
                 archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
             }
         }
