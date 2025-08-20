@@ -8,12 +8,24 @@ pipeline {
         FRONTEND_IMAGE = "tien2k3/shoeshop-frontend:latest"
         MANAGER_USER = "ubuntu"
         MANAGER_IP = "18.140.218.13"
+        GIT_REPO_URL = "https://github.com/tierik-bjornson/shoeshop.git"
+        GIT_BRANCH = "main"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/tierik-bjornson/shoeshop.git'
+            }
+        }
+
+        stage('Get Git Commit Hash') {
+            steps {
+                script {
+                    env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    env.BACKEND_IMAGE_TAGGED = "${BACKEND_IMAGE}:${GIT_COMMIT_SHORT}"
+                    env.FRONTEND_IMAGE_TAGGED = "${FRONTEND_IMAGE}:${GIT_COMMIT_SHORT}"
+                }
             }
         }
 
@@ -61,8 +73,10 @@ pipeline {
                 script {
                     sh """
                     echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-                    docker push $BACKEND_IMAGE
-                    docker push $FRONTEND_IMAGE
+                    docker push ${BACKEND_IMAGE}:latest
+                    docker push ${BACKEND_IMAGE_TAGGED}
+                    docker push ${FRONTEND_IMAGE}:latest
+                    docker push ${FRONTEND_IMAGE_TAGGED}
                     """
                 }
             }
