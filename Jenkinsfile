@@ -59,7 +59,7 @@ pipeline {
         //                     mkdir -p trivy-reports
         //                     chmod -R 777 trivy-reports
 
-        //                     cp /html.tpl trivy-reports/html.tpl || { echo "Failed to copy html.tpl"; exit 1; }
+        //                     cp /html.tpl trivy-reports/html.tpl || { echo "Failed  to copy html.tpl"; exit 1; }
 
         //                     if [ ! -s trivy-reports/html.tpl ]; then
         //                         echo "Error: html.tpl is empty or not found"
