@@ -54,7 +54,7 @@ pipeline {
         stage('Image Scan backend') {
             steps {
                 script {
-                    docker.image('aquasec/trivy:latest').inside('--dns 8.8.8.8 --entrypoint="" --volume /usr/bin/html.tpl:/html.tpl:ro') {
+                    docker.image('aquasec/trivy:latest').inside('--dns 8.8.8.8 --entrypoint="" --volume /home/tien/trivy/html.tpl:/html.tpl:ro') {
                         sh """
                             mkdir -p trivy-reports
                             chmod -R 777 trivy-reports
