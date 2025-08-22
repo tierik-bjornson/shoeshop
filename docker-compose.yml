@@ -7,8 +7,7 @@ services:
       - "5000:5000"
     networks:
       - shoeshop-network
-    env_file:
-      - .env
+   
     deploy:
       replicas: 3
       restart_policy:
