@@ -4,12 +4,14 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')  
         SSH_KEY_CREDENTIALS = credentials('swarm-manager-ssh')       
         STACK_NAME = "shoeshop"
-        BACKEND_IMAGE = "tien2k3/shoeshop-backend"
-        FRONTEND_IMAGE = "tien2k3/shoeshop-frontend"
-        MANAGER_USER = "ubuntu"
-        MANAGER_IP = "18.140.218.13"
+        BACKEND_IMAGE = "192.168.2.55:8443/shoeshop/shoeshop-backend"
+        FRONTEND_IMAGE = "192.168.2.55:8443/shoeshop/shoeshop-frontend"
+        MANAGER_USER = "tien"
+        MANAGER_IP = "192.168.2.55"
         GIT_REPO_URL = "https://github.com/tierik-bjornson/shoeshop.git"
         GIT_BRANCH = "main"
+        HARBOR_CREDENTIALS = credentials('harbor-credentials')
+        REGISTRY_URL = "192.168.2.55:8443"
     }
 
     stages {
@@ -82,11 +84,12 @@ pipeline {
         }
     }
 }
-        stage('Push Images to DockerHub') {
+        stage('Push Images to Harbor') {
             steps {
                 script {
                     sh """
-                    echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+                    echo $HARBOR_CREDENTIALS_PSW | docker login 192.168.2.55:8443 -u $HARBOR_CREDENTIALS_USR --password-stdin
+
                     docker push ${BACKEND_IMAGE}:latest
                     docker push ${BACKEND_IMAGE_TAGGED}
                     docker push ${FRONTEND_IMAGE}:latest
@@ -96,46 +99,46 @@ pipeline {
             }
         }
 
-        stage('Pull docker-compose.yml to from Git') {
-            steps {
-                sshagent(['swarm-manager-ssh']) {
-                     sh '''
-                     ssh -o StrictHostKeyChecking=no ubuntu@18.140.218.13 "mkdir -p /home/ubuntu/shoeshop"
-                     if [ -d "/home/$MANAGER_USER/shoeshop/.git" ]; then
-                            cd /home/$MANAGER_USER/shoeshop
-                            git pull origin $GIT_BRANCH 
-                        else
-                            git clone -b $GIT_BRANCH $GIT_REPO_URL /home/$MANAGER_USER/shoeshop 
-                        fi
-                     '''
-                }
-            }
-        }
+        // stage('Pull docker-compose.yml to from Git') {
+        //     steps {
+        //         sshagent(['swarm-manager-ssh']) {
+        //              sh '''
+        //              ssh -o StrictHostKeyChecking=no ubuntu@18.140.218.13 "mkdir -p /home/ubuntu/shoeshop"
+        //              if [ -d "/home/$MANAGER_USER/shoeshop/.git" ]; then
+        //                     cd /home/$MANAGER_USER/shoeshop
+        //                     git pull origin $GIT_BRANCH 
+        //                 else
+        //                     git clone -b $GIT_BRANCH $GIT_REPO_URL /home/$MANAGER_USER/shoeshop 
+        //                 fi
+        //              '''
+        //         }
+        //     }
+        // }
 
-        stage('Deploy Docker Stack via SSH') {
-            steps {
-                sshagent(['swarm-manager-ssh']) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no $MANAGER_USER@$MANAGER_IP '
-                        export TAG=$IMAGE_TAG
-                        docker stack deploy -c /home/$MANAGER_USER/shoeshop/docker-compose.yml $STACK_NAME --with-registry-auth
-                    '
-                    """
-                }
-            }
-        }
+        // stage('Deploy Docker Stack via SSH') {
+        //     steps {
+        //         sshagent(['swarm-manager-ssh']) {
+        //             sh """
+        //             ssh -o StrictHostKeyChecking=no $MANAGER_USER@$MANAGER_IP '
+        //                 export TAG=$IMAGE_TAG
+        //                 docker stack deploy -c /home/$MANAGER_USER/shoeshop/docker-compose.yml $STACK_NAME --with-registry-auth
+        //             '
+        //             """
+        //         }
+        //     }
+        // }
 
-        stage('Health check') {
-            steps {
-                sshagent(['swarm-manager-ssh']) {
-                     sh '''
-                     ssh -o StrictHostKeyChecking=no ubuntu@18.140.218.13 
-                     netstat -tuln | grep 3000
-                     curl --fail --max-time 100 -v http://$MANAGER_IP:3000
-                     '''
-                }
-            }
-        }
+        // stage('Health check') {
+        //     steps {
+        //         sshagent(['swarm-manager-ssh']) {
+        //              sh '''
+        //              ssh -o StrictHostKeyChecking=no ubuntu@18.140.218.13 
+        //              netstat -tuln | grep 3000
+        //              curl --fail --max-time 100 -v http://$MANAGER_IP:3000
+        //              '''
+        //         }
+        //     }
+        // }
     }
 
     post {
