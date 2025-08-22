@@ -94,17 +94,22 @@ pipeline {
         stage('Pull docker-compose.yml from Git') {
             steps {
                 sshagent(['swarm-manager-ssh']) {
-                    sh '''
-                        ssh -o StrictHostKeyChecking=no ${MANAGER_USER}@${MANAGER_IP} "
-                            mkdir -p /home/${MANAGER_USER}/shoeshop &&
-                            if [ -d /home/${MANAGER_USER}/shoeshop/.git ]; then
-                                cd /home/${MANAGER_USER}/shoeshop && git pull origin ${GIT_BRANCH}
-                            else
-                                git clone -b ${GIT_BRANCH} ${GIT_REPO_URL} /home/${MANAGER_USER}/shoeshop
-                            fi
-                        "
-                    '''
-                }
+                   sh """
+                      ssh -o StrictHostKeyChecking=no $MANAGER_USER@$MANAGER_IP '
+                      mkdir -p /home/$MANAGER_USER/shoeshop
+                      cd /home/$MANAGER_USER/shoeshop
+                      if [ -d ".git" ]; then
+                      git reset --hard
+                      git clean -fd
+                      git pull origin $GIT_BRANCH
+                      else
+                      rm -rf /home/$MANAGER_USER/shoeshop/*
+                       git clone -b $GIT_BRANCH $GIT_REPO_URL /home/$MANAGER_USER/shoeshop
+                       fi
+                      '
+                  """
+               }
+
             }
         }
 
