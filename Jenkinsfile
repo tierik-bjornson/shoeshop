@@ -1,8 +1,7 @@
 pipeline {
     agent any
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')  
-        SSH_KEY_CREDENTIALS = credentials('swarm-manager-ssh')       
+        SSH_KEY_CREDENTIALS = credentials('swarm-manager-ssh')
         STACK_NAME = "shoeshop"
         BACKEND_IMAGE = "192.168.2.55:8443/shoeshop/shoeshop-backend"
         FRONTEND_IMAGE = "192.168.2.55:8443/shoeshop/shoeshop-frontend"
@@ -10,14 +9,13 @@ pipeline {
         MANAGER_IP = "192.168.2.55"
         GIT_REPO_URL = "https://github.com/tierik-bjornson/shoeshop.git"
         GIT_BRANCH = "main"
-        HARBOR_CREDENTIALS = credentials('harbor-credentials')
         REGISTRY_URL = "192.168.2.55:8443"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/tierik-bjornson/shoeshop.git'
+                git branch: "${GIT_BRANCH}", url: "${GIT_REPO_URL}"
             }
         }
 
@@ -35,8 +33,8 @@ pipeline {
             steps {
                 dir('Backend') {
                     sh """
-                    docker build -t ${BACKEND_IMAGE}:latest .
-                    docker tag ${BACKEND_IMAGE}:latest ${BACKEND_IMAGE_TAGGED}
+                        docker build -t ${BACKEND_IMAGE}:latest .
+                        docker tag ${BACKEND_IMAGE}:latest ${BACKEND_IMAGE_TAGGED}
                     """
                 }
             }
@@ -46,71 +44,66 @@ pipeline {
             steps {
                 dir('Frontend') {
                     sh """
-                    docker build -t ${FRONTEND_IMAGE}:latest .
-                    docker tag ${FRONTEND_IMAGE}:latest ${FRONTEND_IMAGE_TAGGED}
+                        docker build -t ${FRONTEND_IMAGE}:latest .
+                        docker tag ${FRONTEND_IMAGE}:latest ${FRONTEND_IMAGE_TAGGED}
                     """
                 }
             }
         }
 
         stage('Image Scan backend') {
-    steps {
-        script {
-            docker.image('aquasec/trivy:latest').inside('--dns 8.8.8.8 --entrypoint="" --volume /usr/bin/html.tpl:/html.tpl:ro') {
-                sh """
-           
-                mkdir -p trivy-reports
-                chmod -R 777 trivy-reports
-
-               
-                cp /html.tpl trivy-reports/html.tpl || { echo "Failed to copy html.tpl"; exit 1; }
-
-      
-                if [ ! -s trivy-reports/html.tpl ]; then
-                    echo "Error: html.tpl is empty or not found"
-                    exit 1
-                fi
-
-
-                trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/backend.json $BACKEND_IMAGE || { echo "Failed to scan backend image"; exit 1; }
-
-   
-                trivy convert --format template --template @trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json || { echo "Failed to convert JSON to HTML"; exit 1; }
-                """
-
-
-                archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
-            }
-        }
-    }
-}
-        stage('Push Images to Harbor') {
             steps {
                 script {
-                    sh """
-                    echo $HARBOR_CREDENTIALS_PSW | docker login 192.168.2.55:8443 -u $HARBOR_CREDENTIALS_USR --password-stdin
+                    docker.image('aquasec/trivy:latest').inside('--dns 8.8.8.8 --entrypoint="" --volume /usr/bin/html.tpl:/html.tpl:ro') {
+                        sh """
+                            mkdir -p trivy-reports
+                            chmod -R 777 trivy-reports
 
-                    docker push ${BACKEND_IMAGE}:latest
-                    docker push ${BACKEND_IMAGE_TAGGED}
-                    docker push ${FRONTEND_IMAGE}:latest
-                    docker push ${FRONTEND_IMAGE_TAGGED}
+                            cp /html.tpl trivy-reports/html.tpl || { echo "Failed to copy html.tpl"; exit 1; }
+
+                            if [ ! -s trivy-reports/html.tpl ]; then
+                                echo "Error: html.tpl is empty or not found"
+                                exit 1
+                            fi
+
+                            trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/backend.json $BACKEND_IMAGE || { echo "Failed to scan backend image"; exit 1; }
+
+                            trivy convert --format template --template @trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json || { echo "Failed to convert JSON to HTML"; exit 1; }
+                        """
+
+                        archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
+                    }
+                }
+            }
+        }
+
+        stage('Push Images to Harbor') {
+            steps {
+                withDockerRegistry(credentialsId: 'harbor-credentials', url: "https://${REGISTRY_URL}") {
+                    sh """
+                        docker push ${BACKEND_IMAGE}:latest
+                        docker push ${BACKEND_IMAGE_TAGGED}
+                        docker push ${FRONTEND_IMAGE}:latest
+                        docker push ${FRONTEND_IMAGE_TAGGED}
                     """
                 }
             }
         }
 
-        // stage('Pull docker-compose.yml to from Git') {
+        // --- Nếu cần triển khai Swarm thì bật lại ---
+        // stage('Pull docker-compose.yml from Git') {
         //     steps {
         //         sshagent(['swarm-manager-ssh']) {
-        //              sh '''
-        //              ssh -o StrictHostKeyChecking=no ubuntu@18.140.218.13 "mkdir -p /home/ubuntu/shoeshop"
-        //              if [ -d "/home/$MANAGER_USER/shoeshop/.git" ]; then
-        //                     cd /home/$MANAGER_USER/shoeshop
-        //                     git pull origin $GIT_BRANCH 
-        //                 else
-        //                     git clone -b $GIT_BRANCH $GIT_REPO_URL /home/$MANAGER_USER/shoeshop 
-        //                 fi
-        //              '''
+        //             sh '''
+        //                 ssh -o StrictHostKeyChecking=no ${MANAGER_USER}@${MANAGER_IP} "
+        //                     mkdir -p /home/${MANAGER_USER}/shoeshop &&
+        //                     if [ -d /home/${MANAGER_USER}/shoeshop/.git ]; then
+        //                         cd /home/${MANAGER_USER}/shoeshop && git pull origin ${GIT_BRANCH}
+        //                     else
+        //                         git clone -b ${GIT_BRANCH} ${GIT_REPO_URL} /home/${MANAGER_USER}/shoeshop
+        //                     fi
+        //                 "
+        //             '''
         //         }
         //     }
         // }
@@ -119,10 +112,10 @@ pipeline {
         //     steps {
         //         sshagent(['swarm-manager-ssh']) {
         //             sh """
-        //             ssh -o StrictHostKeyChecking=no $MANAGER_USER@$MANAGER_IP '
-        //                 export TAG=$IMAGE_TAG
-        //                 docker stack deploy -c /home/$MANAGER_USER/shoeshop/docker-compose.yml $STACK_NAME --with-registry-auth
-        //             '
+        //                 ssh -o StrictHostKeyChecking=no ${MANAGER_USER}@${MANAGER_IP} '
+        //                     export TAG=${IMAGE_TAG}
+        //                     docker stack deploy -c /home/${MANAGER_USER}/shoeshop/docker-compose.yml ${STACK_NAME} --with-registry-auth
+        //                 '
         //             """
         //         }
         //     }
@@ -131,19 +124,14 @@ pipeline {
         // stage('Health check') {
         //     steps {
         //         sshagent(['swarm-manager-ssh']) {
-        //              sh '''
-        //              ssh -o StrictHostKeyChecking=no ubuntu@18.140.218.13 
-        //              netstat -tuln | grep 3000
-        //              curl --fail --max-time 100 -v http://$MANAGER_IP:3000
-        //              '''
+        //             sh '''
+        //                 ssh -o StrictHostKeyChecking=no ${MANAGER_USER}@${MANAGER_IP} "
+        //                     netstat -tuln | grep 3000 &&
+        //                     curl --fail --max-time 100 -v http://${MANAGER_IP}:3000
+        //                 "
+        //             '''
         //         }
         //     }
         // }
-    }
-
-    post {
-        always {
-            sh 'docker logout'
-        }
     }
 }
