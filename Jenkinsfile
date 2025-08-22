@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        // DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')  
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')  
         SSH_KEY_CREDENTIALS = credentials('swarm-manager-ssh')       
         STACK_NAME = "shoeshop"
         BACKEND_IMAGE = "192.168.2.55:8443/shoeshop/shoeshop-backend"
