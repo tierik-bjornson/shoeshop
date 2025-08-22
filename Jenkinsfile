@@ -66,7 +66,7 @@ pipeline {
                                 exit 1
                             fi
 
-                            trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/backend.json $BACKEND_IMAGE || { echo "Failed to san backend image"; exit 1; }
+                            trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/backend.json $BACKEND_IMAGE || { echo "Failed to scan backend image"; exit 1; }
 
                             trivy convert --format template --template @trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json || { echo "Failed to convert JSON to HTML"; exit 1; }
                         """
