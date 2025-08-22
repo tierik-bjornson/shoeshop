@@ -62,7 +62,7 @@ pipeline {
                             cp /html.tpl trivy-reports/html.tpl || { echo "Failed  to copy html.tpl"; exit 1; }
 
                             if [ ! -s trivy-reports/html.tpl ]; then
-                                echo "Error: html.tpl is empty or not found"
+                                echo "Error:html.tpl is empty or not found"
                                 exit 1
                             fi
 
