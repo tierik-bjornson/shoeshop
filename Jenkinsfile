@@ -51,31 +51,31 @@ pipeline {
             }
         }
 
-        // stage('Image Scan backend') {
-        //     steps {
-        //         script {
-        //             docker.image('aquasec/trivy:latest').inside('--dns 8.8.8.8 --entrypoint="" --volume /usr/bin/html.tpl:/html.tpl:ro') {
-        //                 sh """
-        //                     mkdir -p trivy-reports
-        //                     chmod -R 777 trivy-reports
+        stage('Image Scan backend') {
+            steps {
+                script {
+                    docker.image('aquasec/trivy:latest').inside('--dns 8.8.8.8 --entrypoint="" --volume /usr/bin/html.tpl:/html.tpl:ro') {
+                        sh """
+                            mkdir -p trivy-reports
+                            chmod -R 777 trivy-reports
 
-        //                     cp /html.tpl trivy-reports/html.tpl || { echo "Failed  to copy html.tpl"; exit 1; }
+                            cp /html.tpl trivy-reports/html.tpl || { echo "Failed  to copy html.tpl"; exit 1; }
 
-        //                     if [ ! -s trivy-reports/html.tpl ]; then
-        //                         echo "Error: html.tpl is empty or not found"
-        //                         exit 1
-        //                     fi
+                            if [ ! -s trivy-reports/html.tpl ]; then
+                                echo "Error: html.tpl is empty or not found"
+                                exit 1
+                            fi
 
-        //                     trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/backend.json $BACKEND_IMAGE || { echo "Failed to scan backend image"; exit 1; }
+                            trivy image --format json --severity HIGH,CRITICAL --output trivy-reports/backend.json $BACKEND_IMAGE || { echo "Failed to scan backend image"; exit 1; }
 
-        //                     trivy convert --format template --template @trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json || { echo "Failed to convert JSON to HTML"; exit 1; }
-        //                 """
+                            trivy convert --format template --template @trivy-reports/html.tpl --output trivy-reports/backend.html trivy-reports/backend.json || { echo "Failed to convert JSON to HTML"; exit 1; }
+                        """
 
-        //                 archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
-        //             }
-        //         }
-        //     }
-        // }
+                        archiveArtifacts artifacts: 'trivy-reports/backend.*', fingerprint: true
+                    }
+                }
+            }
+        }
 
         stage('Push Images to Harbor') {
             steps {
