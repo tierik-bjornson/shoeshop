@@ -5,8 +5,8 @@ pipeline {
         STACK_NAME = "shoeshop"
         BACKEND_IMAGE = "192.168.2.55:8443/shoeshop/shoeshop-backend"
         FRONTEND_IMAGE = "192.168.2.55:8443/shoeshop/shoeshop-frontend"
-        MANAGER_USER = "tien"
-        MANAGER_IP = "192.168.2.55"
+        MANAGER_USER = ""
+        MANAGER_IP = "18.140.218.13"
         GIT_REPO_URL = "https://github.com/tierik-bjornson/shoeshop.git"
         GIT_BRANCH = "main"
         REGISTRY_URL = "192.168.2.55:8443"
@@ -90,36 +90,36 @@ pipeline {
             }
         }
 
-        // --- Nếu cần triển khai Swarm thì bật lại ---
-        // stage('Pull docker-compose.yml from Git') {
-        //     steps {
-        //         sshagent(['swarm-manager-ssh']) {
-        //             sh '''
-        //                 ssh -o StrictHostKeyChecking=no ${MANAGER_USER}@${MANAGER_IP} "
-        //                     mkdir -p /home/${MANAGER_USER}/shoeshop &&
-        //                     if [ -d /home/${MANAGER_USER}/shoeshop/.git ]; then
-        //                         cd /home/${MANAGER_USER}/shoeshop && git pull origin ${GIT_BRANCH}
-        //                     else
-        //                         git clone -b ${GIT_BRANCH} ${GIT_REPO_URL} /home/${MANAGER_USER}/shoeshop
-        //                     fi
-        //                 "
-        //             '''
-        //         }
-        //     }
-        // }
+        
+        stage('Pull docker-compose.yml from Git') {
+            steps {
+                sshagent(['swarm-manager-ssh']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ${MANAGER_USER}@${MANAGER_IP} "
+                            mkdir -p /home/${MANAGER_USER}/shoeshop &&
+                            if [ -d /home/${MANAGER_USER}/shoeshop/.git ]; then
+                                cd /home/${MANAGER_USER}/shoeshop && git pull origin ${GIT_BRANCH}
+                            else
+                                git clone -b ${GIT_BRANCH} ${GIT_REPO_URL} /home/${MANAGER_USER}/shoeshop
+                            fi
+                        "
+                    '''
+                }
+            }
+        }
 
-        // stage('Deploy Docker Stack via SSH') {
-        //     steps {
-        //         sshagent(['swarm-manager-ssh']) {
-        //             sh """
-        //                 ssh -o StrictHostKeyChecking=no ${MANAGER_USER}@${MANAGER_IP} '
-        //                     export TAG=${IMAGE_TAG}
-        //                     docker stack deploy -c /home/${MANAGER_USER}/shoeshop/docker-compose.yml ${STACK_NAME} --with-registry-auth
-        //                 '
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Deploy Docker Stack via SSH') {
+            steps {
+                sshagent(['swarm-manager-ssh']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${MANAGER_USER}@${MANAGER_IP} '
+                            export TAG=${IMAGE_TAG}
+                            docker stack deploy -c /home/${MANAGER_USER}/shoeshop/docker-compose.yml ${STACK_NAME} --with-registry-auth
+                        '
+                    """
+                }
+            }
+        }
 
         // stage('Health check') {
         //     steps {
