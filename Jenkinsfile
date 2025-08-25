@@ -6,7 +6,7 @@ pipeline {
         BACKEND_IMAGE = "192.168.2.55:8443/shoeshop/shoeshop-backend"
         FRONTEND_IMAGE = "192.168.2.55:8443/shoeshop/shoeshop-frontend"
         MANAGER_USER = "ubuntu"
-        MANAGER_IP = "18.140.218.13"
+        MANAGER_IP = ""
         GIT_REPO_URL = "https://github.com/tierik-bjornson/shoeshop.git"
         GIT_BRANCH = "main"
         REGISTRY_URL = "192.168.2.55:8443"
