@@ -91,34 +91,34 @@ pipeline {
         }
 
         
-        stage('Pull docker-compose.yml from Git') {
-            steps {
-                sshagent(['swarm-manager-ssh']) {
-                       sh """
-                       ssh -o StrictHostKeyChecking=no $MANAGER_USER@$MANAGER_IP '
-                       rm -rf /home/$MANAGER_USER/shoeshop
-                        git clone -b $GIT_BRANCH $GIT_REPO_URL /home/$MANAGER_USER/shoeshop
-                       '
-                        """
+        // stage('Pull docker-compose.yml from Git') {
+        //     steps {
+        //         sshagent(['swarm-manager-ssh']) {
+        //                sh """
+        //                ssh -o StrictHostKeyChecking=no $MANAGER_USER@$MANAGER_IP '
+        //                rm -rf /home/$MANAGER_USER/shoeshop
+        //                 git clone -b $GIT_BRANCH $GIT_REPO_URL /home/$MANAGER_USER/shoeshop
+        //                '
+        //                 """
 
-               }
+        //        }
 
-            }
-        }
+        //     }
+        // }
 
-        stage('Deploy Docker Stack via SSH') {
-            steps {
-                sshagent(['swarm-manager-ssh']) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ${MANAGER_USER}@${MANAGER_IP} '
-                            cd /home/$MANAGER_USER/shoeshop
-                            export TAG=$BUILD_NUMBER
-                             docker stack deploy -c docker-compose.yml shoeshop --with-registry-auth
-                        '
-                    """
-                }
-            }
-        }
+        // stage('Deploy Docker Stack via SSH') {
+        //     steps {
+        //         sshagent(['swarm-manager-ssh']) {
+        //             sh """
+        //                 ssh -o StrictHostKeyChecking=no ${MANAGER_USER}@${MANAGER_IP} '
+        //                     cd /home/$MANAGER_USER/shoeshop
+        //                     export TAG=$BUILD_NUMBER
+        //                      docker stack deploy -c docker-compose.yml shoeshop --with-registry-auth
+        //                 '
+        //             """
+        //         }
+        //     }
+        // }
 
         // stage('Health check') {
         //     steps {
